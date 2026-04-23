@@ -189,23 +189,23 @@ const Index = () => {
                 style={{ animationDelay: `${i * 0.06}s` }}
               >
                 <div
-                  className={`w-12 h-12 rounded-sm flex items-center justify-center mb-5 ${
+                  className={`w-14 h-14 rounded-md flex items-center justify-center mb-5 transition-smooth group-hover:scale-110 ${
                     section.color === "gold"
-                      ? "bg-gold/15 text-accent"
+                      ? "bg-gold text-gold-foreground"
                       : section.color === "pomegranate"
-                      ? "bg-pomegranate/10 text-pomegranate"
-                      : "bg-ceramic/15 text-ceramic"
+                      ? "bg-pomegranate text-pomegranate-foreground"
+                      : "bg-ceramic text-ceramic-foreground"
                   }`}
                 >
-                  <Icon className="w-6 h-6" />
+                  <Icon className="w-7 h-7" strokeWidth={2} />
                 </div>
-                <h3 className="font-display text-xl text-foreground mb-3">
+                <h3 className="font-display text-xl text-foreground mb-3 font-bold">
                   {section.title}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                   {section.desc}
                 </p>
-                <div className="mt-5 flex items-center gap-2 text-xs uppercase tracking-widest text-accent group-hover:gap-3 transition-smooth">
+                <div className="mt-5 flex items-center gap-2 text-xs uppercase tracking-widest text-accent font-bold group-hover:gap-3 transition-smooth">
                   Kirish <ArrowRight className="w-3 h-3" />
                 </div>
               </Link>
