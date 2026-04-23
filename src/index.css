@@ -146,14 +146,19 @@
   }
 
   .ornament-card {
-    @apply bg-card border border-border/60 transition-all duration-500;
+    @apply bg-card border-2 border-border/60 transition-all duration-500;
     box-shadow: var(--shadow-soft);
   }
 
   .ornament-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px);
     box-shadow: var(--shadow-warm);
-    border-color: hsl(var(--gold) / 0.4);
+    border-color: hsl(var(--gold));
+  }
+
+  /* Tezkor harakat tugmasi (CTA) yorqin variant */
+  .cta-bright {
+    @apply bg-gradient-gold text-primary font-bold shadow-gold;
   }
 }
 
