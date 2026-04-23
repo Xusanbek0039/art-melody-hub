@@ -9,34 +9,34 @@
 
 @layer base {
   :root {
-    /* Asosiy palitra - Suzani Heritage */
-    --background: 38 35% 95%;          /* Silk cream */
-    --foreground: 25 35% 18%;          /* Deep timber */
+    /* Asosiy palitra - Suzani Heritage (yorqinroq) */
+    --background: 40 50% 97%;          /* Brighter cream */
+    --foreground: 25 40% 14%;          /* Deeper timber for contrast */
 
-    --card: 38 40% 98%;
-    --card-foreground: 25 35% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 25 40% 14%;
 
-    --popover: 38 40% 98%;
-    --popover-foreground: 25 35% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 40% 14%;
 
     /* Timber - asosiy brand */
-    --primary: 25 35% 18%;
-    --primary-foreground: 38 35% 95%;
+    --primary: 25 40% 14%;
+    --primary-foreground: 40 50% 97%;
 
     /* Gold - urg'u uchun */
-    --secondary: 38 40% 88%;
-    --secondary-foreground: 25 35% 18%;
+    --secondary: 38 50% 92%;
+    --secondary-foreground: 25 40% 14%;
 
-    --muted: 38 25% 90%;
-    --muted-foreground: 25 20% 40%;
+    --muted: 38 30% 93%;
+    --muted-foreground: 25 25% 32%;
 
-    /* Terracotta accent */
-    --accent: 18 55% 42%;
-    --accent-foreground: 38 35% 95%;
+    /* Terracotta accent - boyitilgan */
+    --accent: 14 70% 44%;
+    --accent-foreground: 40 50% 97%;
 
-    /* Saffron Gold */
-    --gold: 38 60% 56%;
-    --gold-foreground: 25 35% 18%;
+    /* Saffron Gold - yorqinroq */
+    --gold: 38 75% 52%;
+    --gold-foreground: 25 40% 14%;
 
     /* Pomegranate - chuqur to'q qizil */
     --pomegranate: 358 55% 38%;
