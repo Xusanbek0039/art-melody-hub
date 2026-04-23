@@ -9,8 +9,8 @@ const navItems = [
   { to: "/ustalar", label: "Ustalar" },
   { to: "/tanlovlar", label: "Tanlovlar" },
   { to: "/nazariya", label: "Nazariya" },
-  { to: "/reels", label: "ART Reels" },
-  { to: "/ai", label: "AI yordamchi" },
+  { to: "/reels", label: "Reels" },
+  { to: "/ai", label: "AI" },
 ];
 
 export const Header = () => {
@@ -38,10 +38,10 @@ export const Header = () => {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "px-4 py-2 text-sm font-medium uppercase tracking-wider rounded-sm transition-smooth",
+                  "px-4 py-2.5 text-sm font-semibold uppercase tracking-wider rounded-md transition-smooth",
                   active
-                    ? "text-accent bg-accent/10"
-                    : "text-foreground/70 hover:text-foreground hover:bg-muted"
+                    ? "text-accent-foreground bg-accent shadow-soft"
+                    : "text-foreground/80 hover:text-foreground hover:bg-muted"
                 )}
               >
                 {item.label}
