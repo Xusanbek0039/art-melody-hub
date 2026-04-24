@@ -46,7 +46,7 @@ class NoteRatingAdmin(admin.ModelAdmin):
 class UserNoteProgressAdmin(admin.ModelAdmin):
     list_display = ['user', 'note', 'is_completed', 'completion_percentage', 
                    'practice_time_minutes', 'last_practiced']
-    list_filter = ['is_completed', 'difficulty_level', 'last_practiced']
+    list_filter = ['is_completed', 'last_practiced']
     search_fields = ['user__username', 'note__title']
     ordering = ['-updated_at']
 

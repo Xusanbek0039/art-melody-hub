@@ -43,4 +43,3 @@ class CompetitionParticipationAdmin(admin.ModelAdmin):
     list_display = ['user', 'competition_name', 'year', 'result', 'is_winner']
     list_filter = ['year', 'is_winner']
     search_fields = ['user__username', 'competition_name', 'result']
-    date_hierarchy = 'year'

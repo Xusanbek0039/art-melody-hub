@@ -30,7 +30,7 @@ class ChoiceInline(admin.TabularInline):
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ['question_text', 'test', 'question_type', 'points', 'order']
-    list_filter = ['question_type', 'points', 'created_at']
+    list_filter = ['question_type', 'points']
     search_fields = ['question_text', 'test__title']
     ordering = ['test', 'order']
     inlines = [ChoiceInline]

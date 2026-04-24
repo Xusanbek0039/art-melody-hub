@@ -4,6 +4,7 @@ from django.db import models
 
 class User(AbstractUser):
     """Custom user model for Art Melody Hub"""
+    email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20, blank=True, null=True, unique=True)
     region = models.CharField(max_length=100, blank=True)
     address = models.TextField(blank=True)
