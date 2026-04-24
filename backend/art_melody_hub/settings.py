@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'competitions',
     'market',
     'theory',
-    'statistics',
+    'app_statistics',
 ]
 
 MIDDLEWARE = [

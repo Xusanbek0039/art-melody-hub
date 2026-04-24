@@ -28,7 +28,7 @@ urlpatterns = [
     path('api/competitions/', include('competitions.urls')),
     path('api/market/', include('market.urls')),
     path('api/theory/', include('theory.urls')),
-    path('api/statistics/', include('statistics.urls')),
+    path('api/statistics/', include('app_statistics.urls')),
     path('api/auth/login/', drf_authtoken_views.obtain_auth_token),
 ]
 
