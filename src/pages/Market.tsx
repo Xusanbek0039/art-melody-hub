@@ -367,12 +367,30 @@ const Market = () => {
             </div>
 
             <div className="p-6 border-t border-border space-y-3">
+              {remainingForFree > 0 ? (
+                <div className="rounded-md bg-gold/10 border border-gold/30 p-3 text-xs">
+                  <div className="flex items-center gap-1.5 text-foreground font-semibold mb-1.5">
+                    <Truck className="w-3.5 h-3.5 text-accent" />
+                    Bepul yetkazib berishgacha: <span className="tabular-nums text-accent">{formatPrice(remainingForFree)}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-gold to-accent transition-all duration-500"
+                      style={{ width: `${Math.min(100, (cartTotal / FREE_DELIVERY_THRESHOLD) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-md bg-accent/10 border border-accent/30 p-3 text-xs flex items-center gap-2 text-accent font-semibold">
+                  <CheckCircle2 className="w-4 h-4" /> Tabriklaymiz! Yetkazib berish bepul.
+                </div>
+              )}
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Mahsulotlar:</span>
                 <span className="tabular-nums">{formatPrice(cartTotal)}</span>
               </div>
               <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Yetkazib berish:</span>
+                <span>Yetkazib berish{form.region ? ` (${form.region})` : ""}:</span>
                 <span className="tabular-nums">
                   {deliveryFee === 0 ? <span className="text-accent font-semibold">Bepul</span> : formatPrice(deliveryFee)}
                 </span>
