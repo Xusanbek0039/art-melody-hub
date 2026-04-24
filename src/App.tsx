@@ -16,6 +16,7 @@ import Statistika from "./pages/Statistika.tsx";
 import ART from "./pages/ART.tsx";
 import Kirish from "./pages/Kirish.tsx";
 import Royxat from "./pages/Royxat.tsx";
+import Market from "./pages/Market.tsx";
 import CulturalLoader from "./components/CulturalLoader.tsx";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const AppContent = () => {
       <Route path="/reels" element={<ART />} />
       <Route path="/kirish" element={<Kirish />} />
       <Route path="/royxat" element={<Royxat />} />
+      <Route path="/market" element={<Market />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

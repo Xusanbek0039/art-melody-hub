@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { to: "/notalar", label: "Notalar" },
   { to: "/ustalar", label: "Ustalar" },
+  { to: "/market", label: "Market" },
   { to: "/tanlovlar", label: "Tanlovlar" },
   { to: "/nazariya", label: "Nazariya" },
   { to: "/reels", label: "Reels" },
