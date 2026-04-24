@@ -222,6 +222,42 @@ const Market = () => {
     });
   };
 
+  const placeOrder = (provider?: "click" | "payme") => {
+    const orderId = "MD-" + Math.floor(100000 + Math.random() * 900000);
+    const items = Object.entries(cart).map(([id, qty]) => {
+      const p = products.find((x) => x.id === id)!;
+      return { id: p.id, name: p.name, image: p.image, price: p.price, qty };
+    });
+    const order: Order = {
+      id: orderId,
+      createdAt: Date.now(),
+      status: "Yangi",
+      items,
+      subtotal: cartTotal,
+      delivery: deliveryFee,
+      total: grandTotal,
+      customer: {
+        name: form.name,
+        phone: form.phone,
+        region: form.region,
+        address: form.address,
+        notes: form.notes || undefined,
+      },
+      payment: {
+        method: form.payment,
+        provider: form.payment === "card" ? provider : undefined,
+      },
+    };
+    saveOrder(order);
+    setOrderSuccess({ id: orderId, total: grandTotal });
+    setCart({});
+    setSubmitting(false);
+    setShowCheckout(false);
+    setShowPaymentConfirm(false);
+    setPendingProvider(null);
+    setForm({ name: "", phone: "+998 ", region: "", address: "", notes: "", payment: "cash" });
+  };
+
   return (
     <PageLayout
       eyebrow="09 — Market"
@@ -441,15 +477,13 @@ const Market = () => {
                 return;
               }
               setErrors({});
+              if (form.payment === "card") {
+                // Open payment provider confirmation
+                setShowPaymentConfirm(true);
+                return;
+              }
               setSubmitting(true);
-              setTimeout(() => {
-                const orderId = "MD-" + Math.floor(100000 + Math.random() * 900000);
-                setOrderSuccess({ id: orderId, total: grandTotal });
-                setCart({});
-                setSubmitting(false);
-                setShowCheckout(false);
-                setForm({ name: "", phone: "+998 ", region: "", address: "", notes: "", payment: "cash" });
-              }, 900);
+              setTimeout(() => placeOrder(), 700);
             }}
             className="space-y-4 mt-2"
           >
