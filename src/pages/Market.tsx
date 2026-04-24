@@ -1,8 +1,9 @@
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Heart, Star, Filter, Search, Truck, Shield, Package, Plus, Minus, User, Phone, MapPin, MessageSquare, CheckCircle2, CreditCard, Banknote } from "lucide-react";
+import { ShoppingCart, Heart, Star, Filter, Search, Truck, Shield, Package, Plus, Minus, User, Phone, MapPin, MessageSquare, CheckCircle2, CreditCard, Banknote, Smartphone } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { z } from "zod";
+import { saveOrder, getDeliveryFee, FREE_DELIVERY_THRESHOLD, Order } from "@/lib/orders";
 
 const orderSchema = z.object({
   name: z.string().trim().min(2, "Ism kamida 2 harf bo'lishi kerak").max(80, "Ism juda uzun"),
@@ -169,6 +171,8 @@ const Market = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<null | { id: string; total: number }>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [pendingProvider, setPendingProvider] = useState<null | "click" | "payme">(null);
+  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [form, setForm] = useState({
     name: "",
     phone: "+998 ",
@@ -190,8 +194,9 @@ const Market = () => {
     const p = products.find((x) => x.id === id);
     return sum + (p ? p.price * qty : 0);
   }, 0);
-  const deliveryFee = cartTotal >= 300000 ? 0 : 35000;
+  const deliveryFee = getDeliveryFee(form.region, cartTotal);
   const grandTotal = cartTotal + deliveryFee;
+  const remainingForFree = Math.max(0, FREE_DELIVERY_THRESHOLD - cartTotal);
 
   const addToCart = (p: Product) => {
     setCart((c) => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }));
@@ -215,6 +220,42 @@ const Market = () => {
       else n.add(id);
       return n;
     });
+  };
+
+  const placeOrder = (provider?: "click" | "payme") => {
+    const orderId = "MD-" + Math.floor(100000 + Math.random() * 900000);
+    const items = Object.entries(cart).map(([id, qty]) => {
+      const p = products.find((x) => x.id === id)!;
+      return { id: p.id, name: p.name, image: p.image, price: p.price, qty };
+    });
+    const order: Order = {
+      id: orderId,
+      createdAt: Date.now(),
+      status: "Yangi",
+      items,
+      subtotal: cartTotal,
+      delivery: deliveryFee,
+      total: grandTotal,
+      customer: {
+        name: form.name,
+        phone: form.phone,
+        region: form.region,
+        address: form.address,
+        notes: form.notes || undefined,
+      },
+      payment: {
+        method: form.payment,
+        provider: form.payment === "card" ? provider : undefined,
+      },
+    };
+    saveOrder(order);
+    setOrderSuccess({ id: orderId, total: grandTotal });
+    setCart({});
+    setSubmitting(false);
+    setShowCheckout(false);
+    setShowPaymentConfirm(false);
+    setPendingProvider(null);
+    setForm({ name: "", phone: "+998 ", region: "", address: "", notes: "", payment: "cash" });
   };
 
   return (
@@ -362,12 +403,30 @@ const Market = () => {
             </div>
 
             <div className="p-6 border-t border-border space-y-3">
+              {remainingForFree > 0 ? (
+                <div className="rounded-md bg-gold/10 border border-gold/30 p-3 text-xs">
+                  <div className="flex items-center gap-1.5 text-foreground font-semibold mb-1.5">
+                    <Truck className="w-3.5 h-3.5 text-accent" />
+                    Bepul yetkazib berishgacha: <span className="tabular-nums text-accent">{formatPrice(remainingForFree)}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-gold to-accent transition-all duration-500"
+                      style={{ width: `${Math.min(100, (cartTotal / FREE_DELIVERY_THRESHOLD) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-md bg-accent/10 border border-accent/30 p-3 text-xs flex items-center gap-2 text-accent font-semibold">
+                  <CheckCircle2 className="w-4 h-4" /> Tabriklaymiz! Yetkazib berish bepul.
+                </div>
+              )}
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Mahsulotlar:</span>
                 <span className="tabular-nums">{formatPrice(cartTotal)}</span>
               </div>
               <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Yetkazib berish:</span>
+                <span>Yetkazib berish{form.region ? ` (${form.region})` : ""}:</span>
                 <span className="tabular-nums">
                   {deliveryFee === 0 ? <span className="text-accent font-semibold">Bepul</span> : formatPrice(deliveryFee)}
                 </span>
@@ -418,15 +477,13 @@ const Market = () => {
                 return;
               }
               setErrors({});
+              if (form.payment === "card") {
+                // Open payment provider confirmation
+                setShowPaymentConfirm(true);
+                return;
+              }
               setSubmitting(true);
-              setTimeout(() => {
-                const orderId = "MD-" + Math.floor(100000 + Math.random() * 900000);
-                setOrderSuccess({ id: orderId, total: grandTotal });
-                setCart({});
-                setSubmitting(false);
-                setShowCheckout(false);
-                setForm({ name: "", phone: "+998 ", region: "", address: "", notes: "", payment: "cash" });
-              }, 900);
+              setTimeout(() => placeOrder(), 700);
             }}
             className="space-y-4 mt-2"
           >
@@ -545,11 +602,16 @@ const Market = () => {
                 <span className="tabular-nums">{formatPrice(cartTotal)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
-                <span>Yetkazib berish:</span>
+                <span>Yetkazib berish{form.region ? ` (${form.region})` : ""}:</span>
                 <span className="tabular-nums">
                   {deliveryFee === 0 ? <span className="text-accent font-semibold">Bepul</span> : formatPrice(deliveryFee)}
                 </span>
               </div>
+              {cartTotal < FREE_DELIVERY_THRESHOLD && (
+                <div className="text-[11px] text-muted-foreground italic">
+                  💡 {formatPrice(FREE_DELIVERY_THRESHOLD)} dan ortiq buyurtma — yetkazib berish bepul
+                </div>
+              )}
               <div className="flex justify-between pt-2 border-t border-border/40 font-bold text-foreground">
                 <span>Jami to'lov:</span>
                 <span className="tabular-nums text-accent text-lg">{formatPrice(grandTotal)}</span>
@@ -582,8 +644,85 @@ const Market = () => {
                 {orderSuccess && formatPrice(orderSuccess.total)}
               </div>
             </div>
-            <Button variant="hero" size="lg" className="w-full" onClick={() => setOrderSuccess(null)}>
-              Yopish
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <Button asChild variant="hero" size="lg" className="flex-1">
+                <Link to="/buyurtmalar" onClick={() => setOrderSuccess(null)}>
+                  Mening buyurtmalarim
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" className="flex-1" onClick={() => setOrderSuccess(null)}>
+                Yopish
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Card payment provider confirmation */}
+      <Dialog open={showPaymentConfirm} onOpenChange={setShowPaymentConfirm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-accent" /> To'lov usulini tasdiqlang
+            </DialogTitle>
+            <DialogDescription>
+              Quyidagi xizmatlardan biri orqali to'lashni tasdiqlaysizmi? To'lov havolasi telefon raqamingizga yuboriladi.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-2 gap-3 py-2">
+            {[
+              { v: "click" as const, label: "Click", color: "from-sky-500 to-blue-600" },
+              { v: "payme" as const, label: "Payme", color: "from-emerald-500 to-teal-600" },
+            ].map((p) => (
+              <button
+                key={p.v}
+                type="button"
+                onClick={() => setPendingProvider(p.v)}
+                className={cn(
+                  "p-5 rounded-md border-2 text-center transition-elegant hover:scale-105",
+                  pendingProvider === p.v
+                    ? "border-accent bg-accent/10 ring-2 ring-accent/30 shadow-soft"
+                    : "border-border hover:border-accent/40"
+                )}
+              >
+                <div className={cn("w-12 h-12 rounded-full mx-auto mb-2 bg-gradient-to-br flex items-center justify-center", p.color)}>
+                  <Smartphone className="w-6 h-6 text-white" />
+                </div>
+                <div className="font-display text-lg font-bold">{p.label}</div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">orqali to'layman</div>
+              </button>
+            ))}
+          </div>
+
+          <div className="rounded-md bg-muted/50 p-3 text-sm flex justify-between font-semibold">
+            <span>To'lov summasi:</span>
+            <span className="tabular-nums text-accent">{formatPrice(grandTotal)}</span>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setShowPaymentConfirm(false);
+                setPendingProvider(null);
+              }}
+            >
+              Bekor qilish
+            </Button>
+            <Button
+              variant="hero"
+              className="flex-1"
+              disabled={!pendingProvider || submitting}
+              onClick={() => {
+                if (!pendingProvider) return;
+                setSubmitting(true);
+                toast.success(`${pendingProvider === "click" ? "Click" : "Payme"} orqali to'lov tasdiqlandi`);
+                setTimeout(() => placeOrder(pendingProvider), 800);
+              }}
+            >
+              {submitting ? "Tasdiqlanmoqda..." : "Tasdiqlash va to'lash"}
             </Button>
           </div>
         </DialogContent>
