@@ -361,20 +361,233 @@ const Market = () => {
               })}
             </div>
 
-            <div className="p-6 border-t border-border space-y-4">
-              <div className="flex justify-between items-baseline">
-                <span className="text-muted-foreground">Jami:</span>
-                <span className="font-display text-2xl font-bold tabular-nums">
-                  {formatPrice(cartTotal)}
+            <div className="p-6 border-t border-border space-y-3">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Mahsulotlar:</span>
+                <span className="tabular-nums">{formatPrice(cartTotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Yetkazib berish:</span>
+                <span className="tabular-nums">
+                  {deliveryFee === 0 ? <span className="text-accent font-semibold">Bepul</span> : formatPrice(deliveryFee)}
                 </span>
               </div>
-              <Button variant="hero" size="lg" className="w-full" onClick={() => toast.success("Buyurtma qabul qilindi!")}>
-                Buyurtma berish
+              <div className="flex justify-between items-baseline pt-2 border-t border-border/40">
+                <span className="text-foreground font-semibold">Jami:</span>
+                <span className="font-display text-2xl font-bold tabular-nums text-accent">
+                  {formatPrice(grandTotal)}
+                </span>
+              </div>
+              <Button
+                variant="hero"
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  setShowCart(false);
+                  setShowCheckout(true);
+                }}
+              >
+                Buyurtma berish →
               </Button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Checkout dialog */}
+      <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl">Buyurtma rasmiylashtirish</DialogTitle>
+            <DialogDescription>
+              Yetkazib berish uchun ma'lumotlaringizni to'ldiring. Operator tez orada bog'lanadi.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const result = orderSchema.safeParse(form);
+              if (!result.success) {
+                const errs: Record<string, string> = {};
+                result.error.issues.forEach((iss) => {
+                  if (iss.path[0]) errs[iss.path[0] as string] = iss.message;
+                });
+                setErrors(errs);
+                toast.error("Iltimos, formani to'g'ri to'ldiring");
+                return;
+              }
+              setErrors({});
+              setSubmitting(true);
+              setTimeout(() => {
+                const orderId = "MD-" + Math.floor(100000 + Math.random() * 900000);
+                setOrderSuccess({ id: orderId, total: grandTotal });
+                setCart({});
+                setSubmitting(false);
+                setShowCheckout(false);
+                setForm({ name: "", phone: "+998 ", region: "", address: "", notes: "", payment: "cash" });
+              }, 900);
+            }}
+            className="space-y-4 mt-2"
+          >
+            <div>
+              <Label htmlFor="name" className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                <User className="w-3 h-3" /> Ism familiya *
+              </Label>
+              <Input
+                id="name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Akbar Karimov"
+                maxLength={80}
+                className={cn(errors.name && "border-destructive")}
+              />
+              {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="phone" className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                <Phone className="w-3 h-3" /> Telefon raqam *
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="+998 90 123 45 67"
+                maxLength={20}
+                className={cn(errors.phone && "border-destructive")}
+              />
+              {errors.phone && <p className="text-xs text-destructive mt-1">{errors.phone}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="region" className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                <MapPin className="w-3 h-3" /> Viloyat / shahar *
+              </Label>
+              <select
+                id="region"
+                value={form.region}
+                onChange={(e) => setForm({ ...form, region: e.target.value })}
+                className={cn(
+                  "w-full h-10 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring",
+                  errors.region && "border-destructive"
+                )}
+              >
+                <option value="">Tanlang...</option>
+                {regions.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+              {errors.region && <p className="text-xs text-destructive mt-1">{errors.region}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="address" className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                <MapPin className="w-3 h-3" /> To'liq manzil *
+              </Label>
+              <Input
+                id="address"
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="Ko'cha, uy, kvartira"
+                maxLength={200}
+                className={cn(errors.address && "border-destructive")}
+              />
+              {errors.address && <p className="text-xs text-destructive mt-1">{errors.address}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="notes" className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                <MessageSquare className="w-3 h-3" /> Qo'shimcha izoh
+              </Label>
+              <Textarea
+                id="notes"
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="Yetkazib berish vaqti, mo'ljal va h.k."
+                rows={2}
+                maxLength={300}
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground mb-2 block">
+                To'lov usuli
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { v: "cash" as const, label: "Naqd", icon: Banknote, sub: "Yetkazib berishda" },
+                  { v: "card" as const, label: "Karta", icon: CreditCard, sub: "Click / Payme" },
+                ].map((o) => (
+                  <button
+                    key={o.v}
+                    type="button"
+                    onClick={() => setForm({ ...form, payment: o.v })}
+                    className={cn(
+                      "p-3 rounded-md border text-left transition-smooth",
+                      form.payment === o.v
+                        ? "border-accent bg-accent/10 ring-2 ring-accent/30"
+                        : "border-border hover:border-accent/40"
+                    )}
+                  >
+                    <o.icon className="w-4 h-4 text-accent mb-1.5" />
+                    <div className="text-sm font-semibold text-foreground">{o.label}</div>
+                    <div className="text-xs text-muted-foreground">{o.sub}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-md bg-muted/50 p-4 space-y-1.5 text-sm">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Mahsulotlar ({cartCount}):</span>
+                <span className="tabular-nums">{formatPrice(cartTotal)}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Yetkazib berish:</span>
+                <span className="tabular-nums">
+                  {deliveryFee === 0 ? <span className="text-accent font-semibold">Bepul</span> : formatPrice(deliveryFee)}
+                </span>
+              </div>
+              <div className="flex justify-between pt-2 border-t border-border/40 font-bold text-foreground">
+                <span>Jami to'lov:</span>
+                <span className="tabular-nums text-accent text-lg">{formatPrice(grandTotal)}</span>
+              </div>
+            </div>
+
+            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={submitting}>
+              {submitting ? "Yuborilmoqda..." : "Buyurtmani tasdiqlash"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success dialog */}
+      <Dialog open={!!orderSuccess} onOpenChange={(o) => !o && setOrderSuccess(null)}>
+        <DialogContent className="max-w-md text-center">
+          <div className="flex flex-col items-center pt-4">
+            <div className="w-20 h-20 rounded-full bg-accent/15 flex items-center justify-center mb-4 animate-scale-in">
+              <CheckCircle2 className="w-10 h-10 text-accent" />
+            </div>
+            <DialogTitle className="font-display text-2xl mb-2">Rahmat! Buyurtma qabul qilindi</DialogTitle>
+            <DialogDescription className="mb-4">
+              Buyurtma raqami: <span className="font-bold text-foreground">{orderSuccess?.id}</span>
+              <br />
+              Operator 15 daqiqa ichida bog'lanadi.
+            </DialogDescription>
+            <div className="w-full rounded-md bg-muted/50 p-4 mb-4">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Jami summa</div>
+              <div className="font-display text-2xl font-bold text-accent tabular-nums">
+                {orderSuccess && formatPrice(orderSuccess.total)}
+              </div>
+            </div>
+            <Button variant="hero" size="lg" className="w-full" onClick={() => setOrderSuccess(null)}>
+              Yopish
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>)
     </PageLayout>
   );
 };
