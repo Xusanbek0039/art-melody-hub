@@ -1,10 +1,33 @@
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Heart, Star, Filter, Search, Truck, Shield, Package, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Heart, Star, Filter, Search, Truck, Shield, Package, Plus, Minus, User, Phone, MapPin, MessageSquare, CheckCircle2, CreditCard, Banknote } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { z } from "zod";
+
+const orderSchema = z.object({
+  name: z.string().trim().min(2, "Ism kamida 2 harf bo'lishi kerak").max(80, "Ism juda uzun"),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+?998\s?\(?\d{2}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}$/, "Telefon: +998 XX XXX XX XX"),
+  region: z.string().trim().min(2, "Viloyatni tanlang").max(60),
+  address: z.string().trim().min(5, "To'liq manzil kiriting").max(200, "Manzil juda uzun"),
+  notes: z.string().trim().max(300, "Izoh juda uzun").optional(),
+  payment: z.enum(["cash", "card"]),
+});
+
+const regions = [
+  "Toshkent shahri", "Toshkent viloyati", "Andijon", "Farg'ona", "Namangan",
+  "Samarqand", "Buxoro", "Xorazm", "Navoiy", "Qashqadaryo", "Surxondaryo",
+  "Jizzax", "Sirdaryo", "Qoraqalpog'iston",
+];
 
 import dutorImg from "@/assets/market-dutor.jpg";
 import tanburImg from "@/assets/market-tanbur.jpg";
