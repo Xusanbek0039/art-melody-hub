@@ -727,25 +727,6 @@ const Market = () => {
           </div>
         </DialogContent>
       </Dialog>
-            </div>
-            <DialogTitle className="font-display text-2xl mb-2">Rahmat! Buyurtma qabul qilindi</DialogTitle>
-            <DialogDescription className="mb-4">
-              Buyurtma raqami: <span className="font-bold text-foreground">{orderSuccess?.id}</span>
-              <br />
-              Operator 15 daqiqa ichida bog'lanadi.
-            </DialogDescription>
-            <div className="w-full rounded-md bg-muted/50 p-4 mb-4">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">Jami summa</div>
-              <div className="font-display text-2xl font-bold text-accent tabular-nums">
-                {orderSuccess && formatPrice(orderSuccess.total)}
-              </div>
-            </div>
-            <Button variant="hero" size="lg" className="w-full" onClick={() => setOrderSuccess(null)}>
-              Yopish
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </PageLayout>
   );
 };
