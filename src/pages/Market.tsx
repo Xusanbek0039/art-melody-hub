@@ -1,8 +1,9 @@
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Heart, Star, Filter, Search, Truck, Shield, Package, Plus, Minus, User, Phone, MapPin, MessageSquare, CheckCircle2, CreditCard, Banknote } from "lucide-react";
+import { ShoppingCart, Heart, Star, Filter, Search, Truck, Shield, Package, Plus, Minus, User, Phone, MapPin, MessageSquare, CheckCircle2, CreditCard, Banknote, Smartphone } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { z } from "zod";
+import { saveOrder, getDeliveryFee, FREE_DELIVERY_THRESHOLD, Order } from "@/lib/orders";
 
 const orderSchema = z.object({
   name: z.string().trim().min(2, "Ism kamida 2 harf bo'lishi kerak").max(80, "Ism juda uzun"),
@@ -169,6 +171,8 @@ const Market = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<null | { id: string; total: number }>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [pendingProvider, setPendingProvider] = useState<null | "click" | "payme">(null);
+  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [form, setForm] = useState({
     name: "",
     phone: "+998 ",
@@ -190,8 +194,9 @@ const Market = () => {
     const p = products.find((x) => x.id === id);
     return sum + (p ? p.price * qty : 0);
   }, 0);
-  const deliveryFee = cartTotal >= 300000 ? 0 : 35000;
+  const deliveryFee = getDeliveryFee(form.region, cartTotal);
   const grandTotal = cartTotal + deliveryFee;
+  const remainingForFree = Math.max(0, FREE_DELIVERY_THRESHOLD - cartTotal);
 
   const addToCart = (p: Product) => {
     setCart((c) => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }));
