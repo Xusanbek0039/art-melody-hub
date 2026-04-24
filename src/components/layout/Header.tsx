@@ -8,6 +8,7 @@ const navItems = [
   { to: "/notalar", label: "Notalar" },
   { to: "/ustalar", label: "Ustalar" },
   { to: "/market", label: "Market" },
+  { to: "/buyurtmalar", label: "Buyurtmalar" },
   { to: "/tanlovlar", label: "Tanlovlar" },
   { to: "/nazariya", label: "Nazariya" },
   { to: "/reels", label: "Reels" },
