@@ -166,6 +166,18 @@ const Market = () => {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [liked, setLiked] = useState<Set<string>>(new Set());
   const [showCart, setShowCart] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState<null | { id: string; total: number }>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    phone: "+998 ",
+    region: "",
+    address: "",
+    notes: "",
+    payment: "cash" as "cash" | "card",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const filtered = products.filter((p) => {
     const catOk = activeCat === "Barchasi" || p.category === activeCat;
@@ -178,6 +190,8 @@ const Market = () => {
     const p = products.find((x) => x.id === id);
     return sum + (p ? p.price * qty : 0);
   }, 0);
+  const deliveryFee = cartTotal >= 300000 ? 0 : 35000;
+  const grandTotal = cartTotal + deliveryFee;
 
   const addToCart = (p: Product) => {
     setCart((c) => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }));
