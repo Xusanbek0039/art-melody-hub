@@ -602,11 +602,16 @@ const Market = () => {
                 <span className="tabular-nums">{formatPrice(cartTotal)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
-                <span>Yetkazib berish:</span>
+                <span>Yetkazib berish{form.region ? ` (${form.region})` : ""}:</span>
                 <span className="tabular-nums">
                   {deliveryFee === 0 ? <span className="text-accent font-semibold">Bepul</span> : formatPrice(deliveryFee)}
                 </span>
               </div>
+              {cartTotal < FREE_DELIVERY_THRESHOLD && (
+                <div className="text-[11px] text-muted-foreground italic">
+                  💡 {formatPrice(FREE_DELIVERY_THRESHOLD)} dan ortiq buyurtma — yetkazib berish bepul
+                </div>
+              )}
               <div className="flex justify-between pt-2 border-t border-border/40 font-bold text-foreground">
                 <span>Jami to'lov:</span>
                 <span className="tabular-nums text-accent text-lg">{formatPrice(grandTotal)}</span>
@@ -626,6 +631,102 @@ const Market = () => {
           <div className="flex flex-col items-center pt-4">
             <div className="w-20 h-20 rounded-full bg-accent/15 flex items-center justify-center mb-4 animate-scale-in">
               <CheckCircle2 className="w-10 h-10 text-accent" />
+            </div>
+            <DialogTitle className="font-display text-2xl mb-2">Rahmat! Buyurtma qabul qilindi</DialogTitle>
+            <DialogDescription className="mb-4">
+              Buyurtma raqami: <span className="font-bold text-foreground">{orderSuccess?.id}</span>
+              <br />
+              Operator 15 daqiqa ichida bog'lanadi.
+            </DialogDescription>
+            <div className="w-full rounded-md bg-muted/50 p-4 mb-4">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Jami summa</div>
+              <div className="font-display text-2xl font-bold text-accent tabular-nums">
+                {orderSuccess && formatPrice(orderSuccess.total)}
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <Button asChild variant="hero" size="lg" className="flex-1">
+                <Link to="/buyurtmalar" onClick={() => setOrderSuccess(null)}>
+                  Mening buyurtmalarim
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" className="flex-1" onClick={() => setOrderSuccess(null)}>
+                Yopish
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Card payment provider confirmation */}
+      <Dialog open={showPaymentConfirm} onOpenChange={setShowPaymentConfirm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-accent" /> To'lov usulini tasdiqlang
+            </DialogTitle>
+            <DialogDescription>
+              Quyidagi xizmatlardan biri orqali to'lashni tasdiqlaysizmi? To'lov havolasi telefon raqamingizga yuboriladi.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-2 gap-3 py-2">
+            {[
+              { v: "click" as const, label: "Click", color: "from-sky-500 to-blue-600" },
+              { v: "payme" as const, label: "Payme", color: "from-emerald-500 to-teal-600" },
+            ].map((p) => (
+              <button
+                key={p.v}
+                type="button"
+                onClick={() => setPendingProvider(p.v)}
+                className={cn(
+                  "p-5 rounded-md border-2 text-center transition-elegant hover:scale-105",
+                  pendingProvider === p.v
+                    ? "border-accent bg-accent/10 ring-2 ring-accent/30 shadow-soft"
+                    : "border-border hover:border-accent/40"
+                )}
+              >
+                <div className={cn("w-12 h-12 rounded-full mx-auto mb-2 bg-gradient-to-br flex items-center justify-center", p.color)}>
+                  <Smartphone className="w-6 h-6 text-white" />
+                </div>
+                <div className="font-display text-lg font-bold">{p.label}</div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">orqali to'layman</div>
+              </button>
+            ))}
+          </div>
+
+          <div className="rounded-md bg-muted/50 p-3 text-sm flex justify-between font-semibold">
+            <span>To'lov summasi:</span>
+            <span className="tabular-nums text-accent">{formatPrice(grandTotal)}</span>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setShowPaymentConfirm(false);
+                setPendingProvider(null);
+              }}
+            >
+              Bekor qilish
+            </Button>
+            <Button
+              variant="hero"
+              className="flex-1"
+              disabled={!pendingProvider || submitting}
+              onClick={() => {
+                if (!pendingProvider) return;
+                setSubmitting(true);
+                toast.success(`${pendingProvider === "click" ? "Click" : "Payme"} orqali to'lov tasdiqlandi`);
+                setTimeout(() => placeOrder(pendingProvider), 800);
+              }}
+            >
+              {submitting ? "Tasdiqlanmoqda..." : "Tasdiqlash va to'lash"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
             </div>
             <DialogTitle className="font-display text-2xl mb-2">Rahmat! Buyurtma qabul qilindi</DialogTitle>
             <DialogDescription className="mb-4">
