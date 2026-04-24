@@ -587,7 +587,7 @@ const Market = () => {
             </Button>
           </div>
         </DialogContent>
-      </Dialog>)
+      </Dialog>
     </PageLayout>
   );
 };
