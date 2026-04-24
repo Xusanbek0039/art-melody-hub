@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-import { Search, Plus, Bot, X } from "lucide-react";
+import { Search, Plus, Bot, X, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const quickActions = [
   { to: "/notalar", label: "Notalar qidirish", icon: Search, color: "bg-gold text-gold-foreground" },
+  { to: "/market", label: "Market", icon: ShoppingBag, color: "bg-ceramic text-ceramic-foreground" },
   { to: "/ai", label: "AI yordamchi", icon: Bot, color: "bg-pomegranate text-pomegranate-foreground" },
 ];
 
