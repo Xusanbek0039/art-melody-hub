@@ -1,3 +1,4 @@
+from art_melody_hub.permissions import IsAdminOrReadOnly
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -22,21 +23,21 @@ class ProductCategoryListCreateView(generics.ListCreateAPIView):
     """List and create product categories"""
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class ProductCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a product category"""
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class ProductListCreateView(generics.ListCreateAPIView):
     """List and create products"""
     queryset = Product.objects.select_related('category', 'master').prefetch_related('ratings', 'likes')
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -103,7 +104,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a product"""
     queryset = Product.objects.select_related('category', 'master').prefetch_related('ratings', 'likes')
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -120,23 +121,27 @@ def rate_product(request, pk):
     """Rate a product"""
     try:
         product = Product.objects.get(pk=pk)
-        rating, created = ProductRating.objects.get_or_create(
-            user=request.user,
-            product=product,
-            defaults={
-                'rating': request.data.get('rating', 5),
-                'review': request.data.get('review', '')
-            }
-        )
-        
-        if not created:
-            rating.rating = request.data.get('rating', rating.rating)
-            rating.review = request.data.get('review', rating.review)
-            rating.save()
-        
-        return Response(ProductRatingSerializer(rating).data)
     except Product.DoesNotExist:
         return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = ProductRatingSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    rating_value = data.get('rating', 5)
+    review = (data.get('review') or '')[:1000]
+    if not (1 <= int(rating_value) <= 5):
+        return Response({'error': 'rating must be 1..5'}, status=status.HTTP_400_BAD_REQUEST)
+
+    rating, created = ProductRating.objects.get_or_create(
+        user=request.user,
+        product=product,
+        defaults={'rating': rating_value, 'review': review}
+    )
+    if not created:
+        rating.rating = rating_value
+        rating.review = review
+        rating.save()
+    return Response(ProductRatingSerializer(rating).data)
 
 
 @api_view(['POST'])
@@ -385,7 +390,7 @@ class WishlistDetailView(generics.RetrieveDestroyAPIView):
 
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([permissions.IsAdminUser])
 def market_stats(request):
     """Get market statistics"""
     total_products = Product.objects.filter(is_active=True).count()

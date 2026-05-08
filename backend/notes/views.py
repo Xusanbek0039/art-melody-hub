@@ -1,3 +1,4 @@
+from art_melody_hub.permissions import IsAdminOrReadOnly
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -14,21 +15,21 @@ class CategoryListCreateView(generics.ListCreateAPIView):
     """List and create note categories"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a category"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class NoteListCreateView(generics.ListCreateAPIView):
     """List and create notes"""
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -85,7 +86,7 @@ class NoteDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a note"""
     queryset = Note.objects.select_related('category').prefetch_related('ratings')
     serializer_class = NoteSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -102,23 +103,27 @@ def rate_note(request, pk):
     """Rate a note"""
     try:
         note = Note.objects.get(pk=pk)
-        rating, created = NoteRating.objects.get_or_create(
-            user=request.user,
-            note=note,
-            defaults={
-                'rating': request.data.get('rating', 5),
-                'review': request.data.get('review', '')
-            }
-        )
-        
-        if not created:
-            rating.rating = request.data.get('rating', rating.rating)
-            rating.review = request.data.get('review', rating.review)
-            rating.save()
-        
-        return Response(NoteRatingSerializer(rating).data)
     except Note.DoesNotExist:
         return Response({'error': 'Note not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = NoteRatingSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    rating_value = int(data.get('rating', 5))
+    if not (1 <= rating_value <= 5):
+        return Response({'error': 'rating must be 1..5'}, status=status.HTTP_400_BAD_REQUEST)
+    review = (data.get('review') or '')[:1000]
+
+    rating, created = NoteRating.objects.get_or_create(
+        user=request.user,
+        note=note,
+        defaults={'rating': rating_value, 'review': review}
+    )
+    if not created:
+        rating.rating = rating_value
+        rating.review = review
+        rating.save()
+    return Response(NoteRatingSerializer(rating).data)
 
 
 @api_view(['POST'])

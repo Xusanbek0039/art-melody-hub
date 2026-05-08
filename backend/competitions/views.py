@@ -1,3 +1,4 @@
+from art_melody_hub.permissions import IsAdminOrReadOnly
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -18,7 +19,7 @@ class CompetitionListCreateView(generics.ListCreateAPIView):
     """List and create competitions"""
     queryset = Competition.objects.prefetch_related('categories', 'registrations')
     serializer_class = CompetitionSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -77,13 +78,13 @@ class CompetitionDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a competition"""
     queryset = Competition.objects.prefetch_related('categories', 'registrations', 'judges', 'schedule', 'news')
     serializer_class = CompetitionSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class CompetitionCategoryListCreateView(generics.ListCreateAPIView):
     """List and create competition categories"""
     serializer_class = CompetitionCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         competition_id = self.request.query_params.get('competition')
@@ -96,7 +97,7 @@ class CompetitionCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a competition category"""
     queryset = CompetitionCategory.objects.all()
     serializer_class = CompetitionCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class RegistrationListCreateView(generics.ListCreateAPIView):
@@ -157,23 +158,32 @@ def submit_registration(request, competition_id, category_id):
             if current_registrations >= category.max_participants:
                 return Response({'error': 'Category is full'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Create registration
+        # Validate input via serializer
+        from rest_framework import serializers as drf_serializers
+
+        class _RegInput(drf_serializers.Serializer):
+            piece_title = drf_serializers.CharField(max_length=300, allow_blank=True, required=False, default='')
+            composer = drf_serializers.CharField(max_length=200, allow_blank=True, required=False, default='')
+            duration_minutes = drf_serializers.IntegerField(min_value=0, max_value=600, required=False, default=0)
+            teacher_name = drf_serializers.CharField(max_length=200, allow_blank=True, required=False, default='')
+            teacher_phone = drf_serializers.CharField(max_length=30, allow_blank=True, required=False, default='')
+            institution = drf_serializers.CharField(max_length=300, allow_blank=True, required=False, default='')
+            experience_years = drf_serializers.IntegerField(min_value=0, max_value=100, required=False, allow_null=True, default=None)
+            previous_achievements = drf_serializers.CharField(max_length=2000, allow_blank=True, required=False, default='')
+            special_needs = drf_serializers.CharField(max_length=1000, allow_blank=True, required=False, default='')
+            notes = drf_serializers.CharField(max_length=2000, allow_blank=True, required=False, default='')
+
+        in_serializer = _RegInput(data=request.data)
+        in_serializer.is_valid(raise_exception=True)
+        v = in_serializer.validated_data
+
         registration = Registration.objects.create(
             user=request.user,
             competition=competition,
             category=category,
-            piece_title=request.data.get('piece_title', ''),
-            composer=request.data.get('composer', ''),
-            duration_minutes=request.data.get('duration_minutes', 0),
-            teacher_name=request.data.get('teacher_name', ''),
-            teacher_phone=request.data.get('teacher_phone', ''),
-            institution=request.data.get('institution', ''),
-            experience_years=request.data.get('experience_years'),
-            previous_achievements=request.data.get('previous_achievements', ''),
-            special_needs=request.data.get('special_needs', ''),
-            notes=request.data.get('notes', '')
+            **v,
         )
-        
+
         return Response(UserRegistrationSerializer(registration).data, status=status.HTTP_201_CREATED)
     
     except Competition.DoesNotExist:
@@ -201,7 +211,7 @@ class ResultDetailView(generics.RetrieveUpdateDestroyAPIView):
 class JudgeListCreateView(generics.ListCreateAPIView):
     """List and create judges"""
     serializer_class = JudgeSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         competition_id = self.request.query_params.get('competition')
@@ -214,13 +224,13 @@ class JudgeDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a judge"""
     queryset = Judge.objects.all()
     serializer_class = JudgeSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class ScheduleListCreateView(generics.ListCreateAPIView):
     """List and create schedule"""
     serializer_class = ScheduleSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         competition_id = self.request.query_params.get('competition')
@@ -233,13 +243,13 @@ class ScheduleDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a schedule item"""
     queryset = Schedule.objects.all()
     serializer_class = ScheduleSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class NewsListCreateView(generics.ListCreateAPIView):
     """List and create news"""
     serializer_class = NewsSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         competition_id = self.request.query_params.get('competition')
@@ -252,11 +262,11 @@ class NewsDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete news"""
     queryset = News.objects.all()
     serializer_class = NewsSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([IsAdminOrReadOnly])
 def competitions_stats(request):
     """Get competitions statistics"""
     total_competitions = Competition.objects.count()
