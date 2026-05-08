@@ -158,23 +158,32 @@ def submit_registration(request, competition_id, category_id):
             if current_registrations >= category.max_participants:
                 return Response({'error': 'Category is full'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Create registration
+        # Validate input via serializer
+        from rest_framework import serializers as drf_serializers
+
+        class _RegInput(drf_serializers.Serializer):
+            piece_title = drf_serializers.CharField(max_length=300, allow_blank=True, required=False, default='')
+            composer = drf_serializers.CharField(max_length=200, allow_blank=True, required=False, default='')
+            duration_minutes = drf_serializers.IntegerField(min_value=0, max_value=600, required=False, default=0)
+            teacher_name = drf_serializers.CharField(max_length=200, allow_blank=True, required=False, default='')
+            teacher_phone = drf_serializers.CharField(max_length=30, allow_blank=True, required=False, default='')
+            institution = drf_serializers.CharField(max_length=300, allow_blank=True, required=False, default='')
+            experience_years = drf_serializers.IntegerField(min_value=0, max_value=100, required=False, allow_null=True, default=None)
+            previous_achievements = drf_serializers.CharField(max_length=2000, allow_blank=True, required=False, default='')
+            special_needs = drf_serializers.CharField(max_length=1000, allow_blank=True, required=False, default='')
+            notes = drf_serializers.CharField(max_length=2000, allow_blank=True, required=False, default='')
+
+        in_serializer = _RegInput(data=request.data)
+        in_serializer.is_valid(raise_exception=True)
+        v = in_serializer.validated_data
+
         registration = Registration.objects.create(
             user=request.user,
             competition=competition,
             category=category,
-            piece_title=request.data.get('piece_title', ''),
-            composer=request.data.get('composer', ''),
-            duration_minutes=request.data.get('duration_minutes', 0),
-            teacher_name=request.data.get('teacher_name', ''),
-            teacher_phone=request.data.get('teacher_phone', ''),
-            institution=request.data.get('institution', ''),
-            experience_years=request.data.get('experience_years'),
-            previous_achievements=request.data.get('previous_achievements', ''),
-            special_needs=request.data.get('special_needs', ''),
-            notes=request.data.get('notes', '')
+            **v,
         )
-        
+
         return Response(UserRegistrationSerializer(registration).data, status=status.HTTP_201_CREATED)
     
     except Competition.DoesNotExist:
