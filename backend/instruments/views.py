@@ -1,3 +1,4 @@
+from art_melody_hub.permissions import IsAdminOrReadOnly
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -20,21 +21,21 @@ class InstrumentCategoryListCreateView(generics.ListCreateAPIView):
     """List and create instrument categories"""
     queryset = InstrumentCategory.objects.all()
     serializer_class = InstrumentCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class InstrumentCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete an instrument category"""
     queryset = InstrumentCategory.objects.all()
     serializer_class = InstrumentCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class MasterListCreateView(generics.ListCreateAPIView):
     """List and create masters"""
     queryset = Master.objects.select_related('user').prefetch_related('reviews', 'works')
     serializer_class = MasterSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -91,7 +92,7 @@ class MasterDetailView(generics.RetrieveUpdateDestroyAPIView):
         'reviews', 'works', 'accessories', 'repair_services'
     )
     serializer_class = MasterDetailSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 @api_view(['POST'])
@@ -129,7 +130,7 @@ def review_master(request, pk):
 class MasterWorkListCreateView(generics.ListCreateAPIView):
     """List and create master works"""
     serializer_class = MasterWorkSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         master_id = self.request.query_params.get('master')
@@ -142,13 +143,13 @@ class MasterWorkDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a master work"""
     queryset = MasterWork.objects.select_related('master')
     serializer_class = MasterWorkSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class InstrumentAccessoryListCreateView(generics.ListCreateAPIView):
     """List and create instrument accessories"""
     serializer_class = InstrumentAccessorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         queryset = InstrumentAccessory.objects.select_related('category', 'master')
@@ -180,13 +181,13 @@ class InstrumentAccessoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete an instrument accessory"""
     queryset = InstrumentAccessory.objects.select_related('category', 'master')
     serializer_class = InstrumentAccessorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class RepairServiceListCreateView(generics.ListCreateAPIView):
     """List and create repair services"""
     serializer_class = RepairServiceSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         queryset = RepairService.objects.select_related('master')
@@ -208,7 +209,7 @@ class RepairServiceDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a repair service"""
     queryset = RepairService.objects.select_related('master')
     serializer_class = RepairServiceSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class ConsultationListCreateView(generics.ListCreateAPIView):
@@ -237,7 +238,7 @@ class ConsultationDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([IsAdminOrReadOnly])
 def masters_stats(request):
     """Get masters statistics"""
     total_masters = Master.objects.count()

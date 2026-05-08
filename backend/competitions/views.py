@@ -1,3 +1,4 @@
+from art_melody_hub.permissions import IsAdminOrReadOnly
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -18,7 +19,7 @@ class CompetitionListCreateView(generics.ListCreateAPIView):
     """List and create competitions"""
     queryset = Competition.objects.prefetch_related('categories', 'registrations')
     serializer_class = CompetitionSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -77,13 +78,13 @@ class CompetitionDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a competition"""
     queryset = Competition.objects.prefetch_related('categories', 'registrations', 'judges', 'schedule', 'news')
     serializer_class = CompetitionSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class CompetitionCategoryListCreateView(generics.ListCreateAPIView):
     """List and create competition categories"""
     serializer_class = CompetitionCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         competition_id = self.request.query_params.get('competition')
@@ -96,7 +97,7 @@ class CompetitionCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a competition category"""
     queryset = CompetitionCategory.objects.all()
     serializer_class = CompetitionCategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class RegistrationListCreateView(generics.ListCreateAPIView):
@@ -201,7 +202,7 @@ class ResultDetailView(generics.RetrieveUpdateDestroyAPIView):
 class JudgeListCreateView(generics.ListCreateAPIView):
     """List and create judges"""
     serializer_class = JudgeSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         competition_id = self.request.query_params.get('competition')
@@ -214,13 +215,13 @@ class JudgeDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a judge"""
     queryset = Judge.objects.all()
     serializer_class = JudgeSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class ScheduleListCreateView(generics.ListCreateAPIView):
     """List and create schedule"""
     serializer_class = ScheduleSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         competition_id = self.request.query_params.get('competition')
@@ -233,13 +234,13 @@ class ScheduleDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a schedule item"""
     queryset = Schedule.objects.all()
     serializer_class = ScheduleSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class NewsListCreateView(generics.ListCreateAPIView):
     """List and create news"""
     serializer_class = NewsSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         competition_id = self.request.query_params.get('competition')
@@ -252,11 +253,11 @@ class NewsDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete news"""
     queryset = News.objects.all()
     serializer_class = NewsSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([IsAdminOrReadOnly])
 def competitions_stats(request):
     """Get competitions statistics"""
     total_competitions = Competition.objects.count()

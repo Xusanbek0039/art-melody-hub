@@ -1,3 +1,4 @@
+from art_melody_hub.permissions import IsAdminOrReadOnly
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -14,21 +15,21 @@ class CategoryListCreateView(generics.ListCreateAPIView):
     """List and create note categories"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a category"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class NoteListCreateView(generics.ListCreateAPIView):
     """List and create notes"""
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -85,7 +86,7 @@ class NoteDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a note"""
     queryset = Note.objects.select_related('category').prefetch_related('ratings')
     serializer_class = NoteSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

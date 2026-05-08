@@ -1,3 +1,4 @@
+from art_melody_hub.permissions import IsAdminOrReadOnly
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -20,20 +21,20 @@ class TheoryLevelListCreateView(generics.ListCreateAPIView):
     """List and create theory levels"""
     queryset = TheoryLevel.objects.all()
     serializer_class = TheoryLevelSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class TheoryLevelDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a theory level"""
     queryset = TheoryLevel.objects.all()
     serializer_class = TheoryLevelSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class TheoryTopicListCreateView(generics.ListCreateAPIView):
     """List and create theory topics"""
     serializer_class = TheoryTopicSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         queryset = TheoryTopic.objects.select_related('level').prefetch_related('resources', 'tests')
@@ -55,13 +56,13 @@ class TheoryTopicDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a theory topic"""
     queryset = TheoryTopic.objects.select_related('level').prefetch_related('resources', 'tests')
     serializer_class = TheoryTopicDetailSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class TheoryTestListCreateView(generics.ListCreateAPIView):
     """List and create theory tests"""
     serializer_class = TheoryTestSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -93,7 +94,7 @@ class TheoryTestDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a theory test"""
     queryset = TheoryTest.objects.select_related('level', 'topic').prefetch_related('questions__choices')
     serializer_class = TheoryTestSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 @api_view(['GET'])
@@ -255,7 +256,7 @@ class TestAttemptDetailView(generics.RetrieveAPIView):
 class TheoryResourceListCreateView(generics.ListCreateAPIView):
     """List and create theory resources"""
     serializer_class = TheoryResourceSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         queryset = TheoryResource.objects.select_related('topic').all()
@@ -282,7 +283,7 @@ class TheoryResourceDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update, or delete a theory resource"""
     queryset = TheoryResource.objects.select_related('topic')
     serializer_class = TheoryResourceSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class UserProgressListCreateView(generics.ListCreateAPIView):
